@@ -7,11 +7,17 @@ services:
     environment:
       - MONGODB_URL=mongodb://mongo:27017
       - DATABASE_NAME=vehicles_db
+      - PYTHONPATH=/app
     depends_on:
       - mongo
     volumes:
       - .:/app
-    command: uvicorn src.main:app --host 0.0.0.0 --port 8000 --reload
+    command: >
+      sh -c "echo 'Current Working Directory:' && pwd &&
+             echo 'Directory listing of /app:' && ls -la /app &&
+             echo 'Directory listing of /app/src:' && ls -la /app/src &&
+             echo 'Python Path:' && python -c 'import sys; print(sys.path)' &&
+             uvicorn src.main:app --host 0.0.0.0 --port 8000 --reload --app-dir /app"
 
   mongo:
     image: mongo:6.0
