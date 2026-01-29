@@ -1,4 +1,5 @@
 from typing import List, Optional
+from datetime import date, datetime
 from pymongo.database import Database
 from pymongo.results import InsertOneResult, UpdateResult, DeleteResult
 from bson import ObjectId
@@ -15,7 +16,6 @@ class VehicleRepository:
         return Vehicle(id=str(result.inserted_id), **vehicle.model_dump())
     
     def _convert_dates(self, data: dict):
-        from datetime import date, datetime
         for key, value in data.items():
             if isinstance(value, date) and not isinstance(value, datetime):
                 data[key] = datetime.combine(value, datetime.min.time())
