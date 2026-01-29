@@ -92,3 +92,47 @@ def test_delete_vehicle(repository):
     
     fetched = repository.get_by_id(str(created.id))
     assert fetched is None
+
+def test_check_uniqueness(repository):
+    # Create 2 vehicles
+    v1 = VehicleCreate(
+        placa="AA-111-AA",
+        numero_economico="101",
+        marca="Volvo",
+        modelo="VNL",
+        anno=2020,
+        tipo_vehiculo=VehicleType.TRACTOR_TRUCK,
+        capacidad_carga_kg=25000,
+        numero_serie="11111111111111111",
+        poliza_seguro="INS-001",
+        vigencia_seguro="2025-01-01"
+    )
+    repository.create(v1)
+
+    v2 = VehicleCreate(
+        placa="BB-222-BB",
+        numero_economico="202",
+        marca="Volvo",
+        modelo="VNL",
+        anno=2020,
+        tipo_vehiculo=VehicleType.TRACTOR_TRUCK,
+        capacidad_carga_kg=25000,
+        numero_serie="22222222222222222",
+        poliza_seguro="INS-002",
+        vigencia_seguro="2025-01-01"
+    )
+    repository.create(v2)
+
+    # Check for conflict with v1's placa
+    conflicts = repository.check_uniqueness("AA-111-AA", "NEW-ECO", "NEW-VIN")
+    assert len(conflicts) == 1
+    assert conflicts[0].placa == "AA-111-AA"
+
+    # Check for conflict with v2's fleet number
+    conflicts = repository.check_uniqueness("NEW-PLACA", "202", "NEW-VIN")
+    assert len(conflicts) == 1
+    assert conflicts[0].numero_economico == "202"
+
+    # Check for conflict with both (matches v1 and v2)
+    conflicts = repository.check_uniqueness("AA-111-AA", "202", "NEW-VIN")
+    assert len(conflicts) == 2

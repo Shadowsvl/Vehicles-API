@@ -9,14 +9,17 @@ class VehicleService:
 
     def create_vehicle(self, vehicle: VehicleCreate) -> Vehicle:
         # Uniqueness checks
-        if self.repository.get_by_field("placa", vehicle.placa):
-            raise HTTPException(status_code=400, detail="Vehicle with this license plate already exists")
-        
-        if self.repository.get_by_field("numero_economico", vehicle.numero_economico):
-            raise HTTPException(status_code=400, detail="Vehicle with this fleet number already exists")
+        conflicts = self.repository.check_uniqueness(vehicle.placa, vehicle.numero_economico, vehicle.numero_serie)
+
+        if conflicts:
+            if any(c.placa == vehicle.placa for c in conflicts):
+                raise HTTPException(status_code=400, detail="Vehicle with this license plate already exists")
             
-        if self.repository.get_by_field("numero_serie", vehicle.numero_serie):
-            raise HTTPException(status_code=400, detail="Vehicle with this VIN already exists")
+            if any(c.numero_economico == vehicle.numero_economico for c in conflicts):
+                raise HTTPException(status_code=400, detail="Vehicle with this fleet number already exists")
+
+            if any(c.numero_serie == vehicle.numero_serie for c in conflicts):
+                raise HTTPException(status_code=400, detail="Vehicle with this VIN already exists")
 
         return self.repository.create(vehicle)
 

@@ -28,7 +28,7 @@ def test_create_vehicle_success(service, mock_repo):
     )
     
     # Mock no existing vehicles
-    mock_repo.get_by_field.return_value = None
+    mock_repo.check_uniqueness.return_value = []
     # Mock successful creation
     created_vehicle = Vehicle(id="mock_id", **vehicle_in.model_dump())
     mock_repo.create.return_value = created_vehicle
@@ -55,7 +55,7 @@ def test_create_vehicle_duplicate_placa(service, mock_repo):
     )
     
     # Mock existing vehicle with same placa
-    mock_repo.get_by_field.side_effect = lambda field, value: Vehicle(id="existing", **vehicle_in.model_dump()) if field == "placa" else None
+    mock_repo.check_uniqueness.return_value = [Vehicle(id="existing", **vehicle_in.model_dump())]
 
     # Execute
     with pytest.raises(HTTPException) as exc:
