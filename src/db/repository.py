@@ -8,6 +8,11 @@ class VehicleRepository:
     def __init__(self, db: Database):
         self.collection = db.get_collection("vehicles")
 
+    def create_indexes(self):
+        self.collection.create_index("placa", unique=True)
+        self.collection.create_index("numero_economico", unique=True)
+        self.collection.create_index("numero_serie", unique=True)
+
     def create(self, vehicle: VehicleCreate) -> Vehicle:
         vehicle_dict = vehicle.model_dump(by_alias=True, exclude=["id"])
         self._convert_dates(vehicle_dict)

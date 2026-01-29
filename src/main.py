@@ -5,12 +5,15 @@ from fastapi.exceptions import RequestValidationError
 from starlette.exceptions import HTTPException as StarletteHTTPException
 
 from src.db.database import DatabaseManager
+from src.db.repository import VehicleRepository
 from src.api.v1.endpoints import vehicles
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     # Startup
     DatabaseManager.connect()
+    repo = VehicleRepository(DatabaseManager.get_db())
+    repo.create_indexes()
     yield
     # Shutdown
     DatabaseManager.close()
