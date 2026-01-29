@@ -20,6 +20,16 @@ class VehicleRepository:
             if isinstance(value, date) and not isinstance(value, datetime):
                 data[key] = datetime.combine(value, datetime.min.time())
 
+    def check_uniqueness(self, placa: str, numero_economico: str, numero_serie: str) -> List[Vehicle]:
+        query = {
+            "$or": [
+                {"placa": placa},
+                {"numero_economico": numero_economico},
+                {"numero_serie": numero_serie}
+            ]
+        }
+        cursor = self.collection.find(query)
+        return [Vehicle(**doc) for doc in cursor]
 
     def get_by_id(self, vehicle_id: str) -> Optional[Vehicle]:
         if not ObjectId.is_valid(vehicle_id):
